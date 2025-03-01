@@ -5,46 +5,31 @@ dotenv.config();
 const app = express();
 const port = 3000;
 
-// Configuración del middleware para analizar JSON
+
 app.use(express.json());
 
-// Ruta para manejar los mensajes del chatbot
-app.post('/chatbot', async (req, res) => {
-  const userMessage = req.body.message;
-
-  // Verifica que se haya enviado un mensaje
-  if (!userMessage) {
-    return res.status(400).json({ error: 'Se requiere un mensaje del usuario' });
-  }
-
-  try {
-    // Solicitud a la API de OpenAI
-    const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-4o-mini', // Modelo que deseas usar
-        store: true,
-        messages: [{ role: 'user', content: userMessage }],
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.API_KEY}`,
-        },
-      }
-    );
-
-    // Enviar la respuesta del chatbot al usuario
-    const botMessage = response.data.choices[0].message.content;
-    res.json({ response: botMessage });
-    console.log({ response: botMessage });
-  } catch (error) {
-    console.error('Error al llamar a la API de OpenAI:', error.message);
-    res.status(500).json({ error: 'Error al procesar el mensaje' });
-  }
+app.post('/chat', async (req, res) => {
+    const postman = req.body.message;
+    try {
+        const response = await axios.post('https://api-log-upzz.onrender.com/api', {message:postman});
+        res.json({response: response.data});
+    } catch (error) {
+        res.status(500).json({ error: error.message }); 
+    }
 });
 
-// Inicia el servidor
+app.post('/api', (req, res) => {
+    const message = req.body.message;
+    console.log(`Received message: ${message}`); 
+
+    res.json({
+        status: 'success',
+        receivedMessage: message,
+        reply: `Hello, you said: "${message}"`,
+    });
+});
+
+
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
